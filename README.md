@@ -1,5 +1,8 @@
 # todo-app
 
+Simple Todo App.
+VueJS TP initiated by the group of Vincent Larreur - Perig Cossec--Kerloc'h - Maugan Le Rhun
+
 ## Project setup
 ```
 npm install
