@@ -1,4 +1,4 @@
-# todo-list
+# ToDo-list [![Netlify Status](https://api.netlify.com/api/v1/badges/c19a8e0c-f90f-4671-af64-cc66b5a73ac4/deploy-status)](https://app.netlify.com/sites/taskstodos/deploys)
 
 Simple Todo App.
 
