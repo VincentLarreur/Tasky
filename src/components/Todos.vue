@@ -10,6 +10,9 @@
       <button @click="filter='unfinished'" v-bind:class="{ current: filter === 'unfinished' }">
         COMPLETED
       </button>
+      <span class="underline">
+        <span v-bind:class="{ done: filter === 'done', unfinished: filter === 'unfinished' }"/>
+      </span>
     </div>
 
     <ul id="task_list">
@@ -22,13 +25,15 @@
       </li>
     </ul>
 
-    <input 
-      type="text" 
-      id="task_input"
-      placeholder="ADD TASK"
-      v-model="task"
-      @keyup.enter="addTask"
-    />
+    <div id="input">
+      <input 
+        type="text" 
+        id="task_input"
+        placeholder="ADD TASK"
+        v-model="task"
+        @keyup.enter="addTask"
+      />
+    </div>
   </div>
 </template>
 
@@ -85,12 +90,14 @@ export default class Todos extends Vue {
 }
 
 #nav button {
-  font-size: 18px;
+  font-size: 16px;
   font-family: "Ubuntu";
   text-transform: uppercase;
   text-align: center;
   background: none;
   border: none;
+  color: #434e8d;
+  transition: all .3s ease-in-out;
 }
 
 #nav .current {
@@ -105,8 +112,7 @@ export default class Todos extends Vue {
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 4px;
-  background-color: rgb(21, 30, 81);
-  opacity: 0.65;
+  background-color: #1b2557;
   box-shadow: 0px 5px 150px 0px rgba(0, 7, 47, 0.75);
   display: grid;
   grid-template-rows: 70px 1fr 70px;
@@ -129,15 +135,54 @@ export default class Todos extends Vue {
   display: inline-block;
 }
 
-#task_input {
+#input {
+  display: flex;
+  background-color: #1a224e;
+}
+input {
+  color: rgb(252, 148, 0);
+  width: 135px;
   border-width: 3px;
   border-color: rgb(252, 148, 0);
   border-style: solid;
-  background-color: rgba(9, 13, 37, 0.4);
-  min-width: 150px;
+  background-color: #131a3e;
   height: 40px;
-  margin: 5px auto;
+  margin: auto;
   border-radius: 40px;
   text-align: center;
+  font-size: 15px;
+  transition: all .3s ease-in-out;
+}
+input:focus {
+  outline: none;
+  color: rgb(252, 148, 0);
+  width: 250px;
+}
+input::placeholder {
+  color: rgb(252, 148, 0);
+}
+
+.underline {
+  position: absolute;
+  width: 90%;
+  top: 55px;
+  left: 5%;
+  border: solid 1px #434e8d;
+}
+.underline span {
+  position: absolute;
+  width: 20%;
+  border: solid 1px rgb(252, 148, 0);
+  border-radius: 1px;
+  transition: all .3s ease-in-out;
+}
+
+.underline .done {
+  width: 30%;
+  transform: translateX(75px);
+}
+.underline .unfinished {
+  width: 38%;
+  transform: translateX(195px);
 }
 </style>
