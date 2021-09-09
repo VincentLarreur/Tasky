@@ -39,7 +39,9 @@
 
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
+
+const storageKey = 'taskList';
 
 @Component
 export default class Todos extends Vue {
@@ -50,12 +52,25 @@ export default class Todos extends Vue {
   // eslint-disable-next-line
   taskList = [] as any;
 
+  mounted() {
+    const taskList = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+    if (taskList.length > 0) {
+      this.taskList = taskList;
+      this.id = taskList.length;
+    }
+  }
+
+  @Watch('taskList', { immediate: false, deep: true })
+  onTaskListChanged() {
+    window.localStorage.setItem(storageKey, JSON.stringify(this.taskList));
+  }
+
   addTask() {
     if(this.task != '') {
       this.taskList.push({
         id: this.id,
         task: this.task,
-        descrption: this.description,
+        description: this.description,
         edit: false,
         state: false
       });
