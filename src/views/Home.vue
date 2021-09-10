@@ -23,10 +23,6 @@ export default class Home extends Vue {
       if (icon) {
         icon.remove();
       }
-      const shortIcon = document.querySelector("link[rel='shortcut icon']");
-      if (shortIcon) {
-        shortIcon.remove();
-      }
 
       // add new favicon image
       if (this.head) {

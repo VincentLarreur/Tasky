@@ -4,10 +4,10 @@
       <button @click="filter=''" v-bind:class="{ current: filter === '' }">
         ALL
       </button>
-      <button @click="filter='done'" v-bind:class="{ current: filter === 'done' }">
+      <button @click="filter='unfinished'" v-bind:class="{ current: filter === 'unfinished' }">
         ONGOING
       </button>
-      <button @click="filter='unfinished'" v-bind:class="{ current: filter === 'unfinished' }">
+      <button @click="filter='done'" v-bind:class="{ current: filter === 'done' }">
         COMPLETED
       </button>
       <span class="underline">
@@ -15,15 +15,29 @@
       </span>
     </div>
 
-    <ul id="task_list">
-      <li v-for="item in filterList()" :key="item.id">
-        <div id="item">
-          <input type="checkbox" v-model="item.state" />
-          <p class="title"><b>{{ item.task }}</b><p>
-          <p class="description">{{item.description}}</p>
-        </div>
-      </li>
-    </ul>
+    <draggable
+        class="list-group"
+        tag="ul"
+        v-model="filteredTaskList"
+        v-bind="dragOptions"
+        @start="drag = true"
+        @end="drag = false"
+      >
+        <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+          <li
+            class="list-group-item"
+            v-for="element in filteredTaskList"
+            :key="element.id"
+          >
+            <input type="checkbox" class="checkbox-round" v-model="element.state"/>
+            <p class="title">{{ element.task }}</p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16" @click="deleteTask(element.id)">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+            </svg>
+          </li>
+        </transition-group>
+      </draggable>
 
     <div id="input">
       <input 
@@ -40,17 +54,25 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
+import draggable from 'vuedraggable'
 
 const storageKey = 'taskList';
 
-@Component
+@Component({ components: { draggable } })
 export default class Todos extends Vue {
-  id = 0;
-  task = '';
-  description = '';
-  filter = '';
+  private id = 0;
+  private task = '';
+  private filter = '';
   // eslint-disable-next-line
-  taskList = [] as any;
+  private taskList = [] as any;
+  private filteredTaskList = [];
+  private drag = false;
+  private dragOptions = {
+    animation: 200,
+    group: "description",
+    disabled: false,
+    ghostClass: "ghost"
+  };
 
   mounted() {
     const taskList = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
@@ -63,6 +85,12 @@ export default class Todos extends Vue {
   @Watch('taskList', { immediate: false, deep: true })
   onTaskListChanged() {
     window.localStorage.setItem(storageKey, JSON.stringify(this.taskList));
+    this.filterList();
+  }
+
+  @Watch('filter', { immediate: false, deep: true })
+  onFilterChanged() {
+    this.filterList();
   }
 
   addTask() {
@@ -70,7 +98,6 @@ export default class Todos extends Vue {
       this.taskList.push({
         id: this.id,
         task: this.task,
-        description: this.description,
         edit: false,
         state: false
       });
@@ -82,13 +109,15 @@ export default class Todos extends Vue {
   filterList() {
     if(this.filter !== '') {
       if(this.filter == 'done') {
-        return this.taskList.filter(task => task.state == true)
+        this.filteredTaskList =  this.taskList.filter(task => task.state == true)
+        return;
       }
       if(this.filter == 'unfinished') {
-        return this.taskList.filter(task => task.state == false)
+        this.filteredTaskList = this.taskList.filter(task => task.state == false)
+        return;
       }
     }
-    return this.taskList;
+    this.filteredTaskList = this.taskList;
   }
 
   deleteTask(id) {
@@ -113,6 +142,7 @@ export default class Todos extends Vue {
   border: none;
   color: #434e8d;
   transition: all .3s ease-in-out;
+  cursor: pointer;
 }
 
 #nav .current {
@@ -133,23 +163,48 @@ export default class Todos extends Vue {
   grid-template-rows: 70px 1fr 70px;
 }
 
-#task_list {
+.list-group {
   overflow: auto;
   list-style-type: none;
   padding: 0;
   margin: 5px;
 }
 
-#task_list li {
+.list-group-item {
   border-radius: 4px;
   background-color: rgb(60, 76, 162);
   color: white;
   margin: 5px;
-}
-#task_list input, #task_list .title {
-  display: inline-block;
+  display: grid;
+  grid-template-columns: 25px 1fr 25px;
+  cursor: move;
 }
 
+.list-group-item .checkbox-round {
+  width: 10px;
+  height: 10px;
+  margin: 13px 10px 10px 8px;
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  border-color: rgb(22, 28, 61);
+  background-color: transparent;
+}
+.list-group-item .checkbox-round:checked {
+  background-color: rgb(252, 148, 0);
+}
+.list-group-item .title {
+  padding: 10px 0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.list-group-item .bi-trash {
+  cursor: pointer;
+  margin: 10px 5px 0px;
+}
 #input {
   display: flex;
   background-color: #1a224e;
@@ -192,11 +247,11 @@ input::placeholder {
   transition: all .3s ease-in-out;
 }
 
-.underline .done {
+.underline .unfinished {
   width: 30%;
   transform: translateX(75px);
 }
-.underline .unfinished {
+.underline .done {
   width: 38%;
   transform: translateX(195px);
 }
